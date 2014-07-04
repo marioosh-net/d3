@@ -22,7 +22,7 @@
 <body>
 
     <button id="prev">prev</button>
-    <button id="next">next</button>    
+    <button id="next">next</button><br/>    
  
     <script>
         /**
@@ -112,18 +112,15 @@
             .call(yAxis);
 
         function redraw() {
-
             /**
              * new data -> new scale
              */
             x.domain(d3.extent(viewdata, function(d) { return d.x; })); // min and max of x in data
-            var t = svg.transition().duration(750);
-            t.select(".x.axis").call(xAxis);
-
-            svg.selectAll("path")
-                .data([viewdata]) // set the new data
-                .attr("d", line);
+            var transition = svg.transition().duration(500);
+            transition.select(".x.axis").call(xAxis);
+            transition.select("path").attr("d", line(viewdata));
         }
+
 
         $('#next').click(function() {
             page++;
