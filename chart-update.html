@@ -21,7 +21,7 @@
     </head>
 <body>
 
-    <button id="last">last</button>
+    <button id="last">prev</button>
     <button id="next">next</button>    
  
     <script>
@@ -32,15 +32,24 @@
             width = 800 - margin.left - margin.right,
             height = 500 - margin.top - margin.bottom;        
 
-        var barnumber = 5;
+        /**
+         * page size
+         */
+        var pageSize = 15;
         var page = 1;
 
-        var data = [ {y:10, x:1}, {y:13,x:2}, {y:20,x:3}, {y:54,x:4}, {y:5, x:5}, {y:15, x:6}, {y:85, x:7}, {y:5, x:8}, {y:25, x:9},
-{y:10, x:10}, {y:13,x:11}, {y:20,x:12}, {y:54,x:13}, {y:5, x:15}, {y:15, x:16}, {y:85, x:20}, {y:5, x:21}, {y:25, x:22},
-{y:10, x:23}, {y:13,x:24}, {y:20,x:25}, {y:54,x:26}, {y:5, x:27}, {y:15, x:29}, {y:85, x:30}, {y:5, x:31}, {y:25, x:32}
-         ];
+        /**
+         * generate some data 
+         */
+        var data = [];
+        for(var i=0;i<1000;i++) {
+            data.push({x:i,y:Math.random()*50});
+        }
 
-        var viewdata = data.slice((page-1)*barnumber,page*barnumber);
+        /**
+         * page of data
+         */
+        var viewdata = data.slice((page-1)*pageSize,page*pageSize);
  
         /**
          * scale on chart width/height
@@ -140,13 +149,15 @@
 
         $('#next').click(function() {
             page++;
-            viewdata = data.slice((page-1)*barnumber,page*barnumber);
+            viewdata = data.slice((page-1)*pageSize,page*pageSize);
             redraw();
         });
-        $('#last').click(function() {
-            page--;
-            viewdata = data.slice((page-1)*barnumber,page*barnumber);
-            redraw();
+        $('#prev').click(function() {
+            if(page>1) {
+                page--;
+                viewdata = data.slice((page-1)*pageSize,page*pageSize);
+                redraw();
+            }
         });
 
     </script>
