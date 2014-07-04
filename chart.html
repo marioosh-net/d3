@@ -1,0 +1,96 @@
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <title>d3</title>
+        <script src="js/jquery-1.11.1.min.js"></script>
+        <script src="js/d3.v3.min.js" charset="utf-8"></script>
+        <style>
+        body {
+            font-size: 12px;
+        }
+        .axis text {
+            font: 10px sans-serif;
+        }
+        .axis path,
+        .axis line {
+            fill: none;
+            stroke: #000;
+            shape-rendering: crispEdges;
+        }
+        </style>
+    </head>
+<body>
+ 
+    <script>
+        /**
+         * chart dimensions
+         */
+        var margin = {top: 20, right: 20, bottom: 30, left: 30},
+            width = 800 - margin.left - margin.right,
+            height = 500 - margin.top - margin.bottom;        
+
+        var data = [ {y:10, x:1}, {y:13,x:2}, {y:20,x:3}, {y:54,x:4}, {y:5, x:5}, {y:15, x:6} ];
+ 
+        /**
+         * scale on chart width/height
+         */
+        var x = d3.scale.linear()
+            .range([0, width])
+            .domain(d3.extent(data, function(d) { return d.x; })); // min and max of x in data
+
+        var y = d3.scale.linear()
+            .range([height, 0])
+            .domain([0, d3.max(data, function(d) { return d.y; })]); // 0 and max of x in data
+
+        /**
+         * function to generate path data
+         * (attribute d of SVG path element)
+         */
+        var line = d3.svg.line()
+            .x(function(d) { return x(d.x); })
+            .y(function(d) { return y(d.y); });
+
+        /**
+         * create svg element
+         */
+        var svg = d3.select("body").append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        /**
+         * create path using data and line generator
+         */
+        svg.append("path")
+            .attr('fill', 'none')
+            .attr('stroke', 'black')
+            .datum(data)
+            .attr("d", line);
+ 
+        /**
+         * axis generators 
+         * bottom and left in scale x and y
+         */
+        var xAxis = d3.svg.axis()
+            .scale(x)
+            .orient("bottom");
+        var yAxis = d3.svg.axis()
+            .scale(y)
+            .orient("left");
+
+        /**
+         * axis generators calls
+         */
+        svg.append("g")
+            .attr("class", "axis")
+            .attr("transform", "translate(0," + height + ")")
+            .call(xAxis);
+
+        svg.append("g")
+            .attr("class", "axis")
+            .call(yAxis);
+
+    </script>
+</body>
+</html>
