@@ -17,6 +17,10 @@
             stroke: #000;
             shape-rendering: crispEdges;
         }
+        .area {
+            fill: lightsteelblue;
+            stroke-width: 0;
+        }        
         </style>
     </head>
 <body>
@@ -71,6 +75,14 @@
             .y(function(d) { return y(d.y); });
 
         /**
+         * area generator function
+         */
+        var area = d3.svg.area()
+            .x(function(d) { return x(d.x); })
+            .y0(height)
+            .y1(function(d) { return y(d.y); });            
+
+        /**
          * create svg element
          */
         var svg = d3.select("body").append("svg")
@@ -111,6 +123,11 @@
             .attr("class", "y axis")
             .call(yAxis);
 
+        svg.append("path")
+            .data([viewdata])
+            .attr("class", "area")
+            .attr("d", area);
+
         function redraw() {
             /**
              * new data -> new scale
@@ -119,6 +136,7 @@
             var transition = svg.transition().duration(500);
             transition.select(".x.axis").call(xAxis);
             transition.select("path").attr("d", line(viewdata));
+            transition.select(".area").attr("d", area(viewdata));
         }
 
 
