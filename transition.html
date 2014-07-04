@@ -12,29 +12,25 @@
 	</head>
 <body>
     <a href="#">update</a>
- 
-    <div></div>
- 
+  
     <script>
         var data = [ 10, 13, 20, 54, 5, 15 ];
  
         var color = d3.scale.category20();
  
-        var s = d3.select("div")
+        var selection = d3.select("body")
             .append("svg")
-            .selectAll("circle");
- 
-        var t = s.data(data)
+            .selectAll("circle")
+            .data(data)
             .enter()
             .append("circle")
-            .attr('r', 5)
-            .attr("fill",function(d,i){return color(i);})
-            .attr('cx', function(d){return d})
-            .attr('cy', function(d){return d});
- 
+                .attr('r', 5)
+                .attr("fill",function(d,i){return color(i);})
+                .attr('cx', function(d){return d})
+                .attr('cy', function(d){return d});
  
         $('a').click(function(){
-            t.transition()
+            selection.transition()
             .duration(2000)
             .attr('cx', function(d){return Math.random() * 10 * d;})
             .attr('cy', function(d){return Math.random() * 10 * d;});
