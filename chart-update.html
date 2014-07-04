@@ -97,8 +97,7 @@
         svg.append("path")
             .attr('fill', 'none')
             .attr('stroke', 'black')
-            .data([viewdata])
-            .attr("d", line);
+            .attr("d", line(viewdata));
  
         /**
          * axis generators 
@@ -124,9 +123,8 @@
             .call(yAxis);
 
         svg.append("path")
-            .data([viewdata])
             .attr("class", "area")
-            .attr("d", area);
+            .attr("d", area(viewdata));
 
         function redraw() {
             /**
