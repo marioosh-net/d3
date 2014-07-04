@@ -21,7 +21,7 @@
     </head>
 <body>
 
-    <button id="last">prev</button>
+    <button id="prev">prev</button>
     <button id="next">next</button>    
  
     <script>
@@ -116,31 +116,9 @@
             /**
              * new data -> new scale
              */
-            x = d3.scale.linear()
-                .range([0, width])
-                .domain(d3.extent(viewdata, function(d) { return d.x; })); // min and max of x in data
-
-            /**
-             * TODO: transition instead of replace
-             */ 
-            svg.selectAll(".x").remove();
-            svg.selectAll(".y").remove();
-
-            xAxis = d3.svg.axis()
-                .scale(x)
-                .orient("bottom");
-            yAxis = d3.svg.axis()
-                .scale(y)
-                .orient("left");
-
-            svg.append("g")
-                .attr("class", "x axis")
-                .attr("transform", "translate(0," + height + ")")
-                .call(xAxis);
-
-            svg.append("g")
-                .attr("class", "y axis")
-                .call(yAxis);
+            x.domain(d3.extent(viewdata, function(d) { return d.x; })); // min and max of x in data
+            var t = svg.transition().duration(750);
+            t.select(".x.axis").call(xAxis);
 
             svg.selectAll("path")
                 .data([viewdata]) // set the new data
