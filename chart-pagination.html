@@ -1,0 +1,161 @@
+<html>
+    <head>
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <title>d3</title>
+        <script src="js/jquery-1.11.1.min.js"></script>
+        <script src="js/d3.v3.min.js" charset="utf-8"></script>
+        <style>
+        body {
+            font-size: 12px;
+        }
+        .axis text {
+            font: 10px sans-serif;
+        }
+        .axis path,
+        .axis line {
+            fill: none;
+            stroke: #000;
+            shape-rendering: crispEdges;
+        }
+        .area {
+            fill: lightsteelblue;
+            stroke-width: 0;
+        }        
+        </style>
+    </head>
+<body>
+
+    <button id="prev">prev</button>
+    <button id="next">next</button><br/>    
+ 
+    <script>
+        /**
+         * chart dimensions
+         */
+        var margin = {top: 20, right: 20, bottom: 30, left: 30},
+            width = 800 - margin.left - margin.right,
+            height = 500 - margin.top - margin.bottom;        
+
+        /**
+         * page size
+         */
+        var pageSize = 20;
+        var page = 1;
+
+        /**
+         * generate some data 
+         */
+        var data = [];
+        for(var i=0;i<1000;i++) {
+            data.push({x:i,y:Math.random()*50});
+        }
+ 
+        /**
+         * scale on chart width/height
+         */
+        var x = d3.scale.linear()
+            .range([0, width/pageSize*d3.max(data, function(d){return d.x})])
+            .domain(d3.extent(data, function(d) { return d.x; })); // min and max of x in data
+
+        var y = d3.scale.linear()
+            .range([height, 0])
+            .domain([0, d3.max(data, function(d) { return d.y; })]); // 0 and max of x in data
+
+        /**
+         * function to generate path data
+         * (attribute d of SVG path element)
+         */
+        var line = d3.svg.line()
+            .x(function(d) { return x(d.x); })
+            .y(function(d) { return y(d.y); });
+
+        /**
+         * area generator function
+         */
+        var area = d3.svg.area()
+            .x(function(d) { return x(d.x); })
+            .y0(height)
+            .y1(function(d) { return y(d.y); });            
+
+        /**
+         * create svg element
+         */
+        var svg = d3.select("body").append("svg")
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        svg.on('click', function(e){
+        	console.log(e);
+        });
+
+        /**
+         * create path using data and line generator
+         */
+        svg.append("path")
+            .attr('fill', 'none')
+            .attr('stroke', 'black')
+            .attr("d", line(data));
+
+        svg.append("path")
+            .attr("class", "area")
+            .attr("d", area(data));
+
+        /**
+         * axis generators 
+         * bottom and left in scale x and y
+         */
+        var xAxis = d3.svg.axis()
+            .scale(x)
+            .orient("bottom");
+        var yAxis = d3.svg.axis()
+            .scale(y)
+            .orient("left");
+
+        /**
+         * axis generators calls
+         */
+        svg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + height + ")")
+            .call(xAxis);
+
+        /**
+         * cover left side of y axis
+         */
+		svg.append("rect")
+			.attr("width","100")
+			.attr("height", height+1)
+			.attr("fill", "#ffffff")
+			.attr("transform","translate(-100,0)"); 
+
+        svg.append("g")
+            .attr("class", "y axis")
+            .call(yAxis);
+
+        function redraw() {
+            /**
+             * new data -> new scale
+             */
+            var transition = svg.transition().duration(1500);
+            transition.select(".x.axis").attr("transform", "translate("+-(page-1)*width+","+height+")").call(xAxis);
+            transition.select("path").attr("transform", "translate("+-(page-1)*width+")");
+            transition.select(".area").attr("transform", "translate("+-(page-1)*width+")");
+        }
+
+
+        $('#next').click(function() {
+            page++;
+            redraw();
+        });
+        $('#prev').click(function() {
+            if(page>1) {
+                page--;
+                redraw();
+            }
+        });
+
+    </script>
+</body>
+</html>
