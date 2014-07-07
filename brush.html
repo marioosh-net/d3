@@ -44,13 +44,16 @@
 <script>
 
 	var columns = ['a', 'b', 'c'];
+	var columns2 = ['a','c'];
 	var timeColumn = 'time';
 
 	var margin = {top: 20, right: 0, bottom: 100, left: columns.length*40},
 		margin2 = {top: 430, right: 0, bottom: 20, left: columns.length*40},
 	    width = 1060 - margin.left - margin.right,
 	    height = 500 - margin.top - margin.bottom,
-	    height2 = 500 - margin2.top - margin2.bottom;
+	    height2 = 500 - margin2.top - margin2.bottom,
+	    height3 = 150; // wykresy pojedyncze
+	    margin3 = 30; //margines gorny pomiedzy wykresami
 
 	/* 2013-03-14T20:15:40.266Z */
 	var parseDate = d3.time.format("%Y-%m-%dT%H:%M:%S.%LZ").parse;
@@ -64,12 +67,24 @@
 		y.push(d3.scale.linear().range([height, 0]));
 	});
 
+	var y_single = [];
+	columns2.forEach(function(c,i) {
+		y_single.push(d3.scale.linear().range([height3, 0]));
+	});	
+
 	var xAxis = d3.svg.axis().scale(x).orient("bottom").tickFormat(d3.time.format("%H:%M"));
     var xAxis2 = d3.svg.axis().scale(x2).orient("bottom").tickFormat(d3.time.format("%H:%M"));
 
     var yAxis = [];
 	columns.forEach(function(c,i) {
 		yAxis.push(d3.svg.axis().scale(y[i]).orient("left"));
+	});
+
+	var xAxis_single = [];
+	var yAxis_single = [];
+	columns2.forEach(function(c,i) {
+		yAxis_single.push(d3.svg.axis().scale(y_single[i]).orient("left"));
+		xAxis_single.push(d3.svg.axis().scale(x).orient("bottom").tickFormat(d3.time.format("%H:%M")));
 	});
 
 	var brush = d3.svg.brush()
@@ -86,6 +101,17 @@
     	);
     });
 
+    var line_single = [];
+    columns2.forEach(function(c,i){
+    	line_single.push(
+    		d3.svg.line()
+    		.interpolate("monotone")
+    		.x(function(d) { return x(d[timeColumn]); })
+    		.y(function(d) { return y_single[i](d[c]); })
+    	);
+    });
+
+
 	var line2 = d3.svg.line()
     	.interpolate("monotone")
     	.x(function(d) { return x2(d[timeColumn]); })
@@ -93,7 +119,7 @@
 
 	var svg = d3.select("body").append("svg")
 	    .attr("width", width + margin.left + margin.right)
-	    .attr("height", height + margin.top + margin.bottom);
+	    .attr("height", height + margin.top + margin.bottom + (columns2.length * (height3+margin3)));
 	  	//.append("g")
 	    //.attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -112,6 +138,13 @@
 	    .attr("transform", "translate(" + margin2.left + "," + margin2.top + ")");
 
 
+	var g_single = [];
+   	columns2.forEach(function(c,i){
+		g_single.push(svg.append("g")
+	    .attr("class", "single")
+	    .attr("transform", "translate(" + margin2.left + "," + (margin2.top + ((i)*(height3+margin3)) + 80) + ")"));
+    });
+
 	d3.json('./data.json', function(error, data){
 
 		  data.forEach(function(d) {
@@ -125,6 +158,9 @@
 		columns.forEach(function(c,i){
 			y[i].domain([0, d3.max(data.map(function(d) { return d[c]; }))]);	
 		});
+		columns2.forEach(function(c,i){
+			y_single[i].domain([0, d3.max(data.map(function(d) { return d[c]; }))]);	
+		});		
 		x2.domain(x.domain());
   		y2.domain(y[0].domain()); // na context pokaz tylko pierwszy wykres (na razie)    
 
@@ -134,6 +170,13 @@
 			      .attr("class", "line line"+i)
 			      .attr("d", line[i]);  			
   		});
+
+		columns2.forEach(function(c,i){
+			 g_single[i].append("path")
+			      .datum(data)
+			      .attr("class", "line single"+i)
+			      .attr("d", line_single[i]);  			
+  		});  		
 
  		focus.append("g")
       		.attr("class", "x axis")
@@ -152,6 +195,25 @@
 	      .attr("transform", "translate(-"+(i*40)+",0)") // przesun oske na lewo
 	      .call(yAxis[i]);      		
       	});
+
+  		columns2.forEach(function(c,i){
+		g_single[i].append("rect")
+			.attr("width","200")
+			.attr("height", height)
+			.attr("fill", "#ffffff")
+			.attr("transform","translate(-200,0)"); 
+
+		  g_single[i].append("g")
+	      .attr("class", "y axis")
+	      //.attr("transform", "translate(-"+(i*40)+",0)") // przesun oske na lewo
+	      .call(yAxis_single[i]);
+
+		  g_single[i].append("g")
+	      .attr("class", "x axis")
+	      .attr("transform", "translate(0,"+height3+")") // przesun oske na lewo
+	      .call(xAxis_single[i]);
+
+      	});      	
 
 	  	context.append("path")
 	      .datum(data)
@@ -177,6 +239,10 @@ function brushed() {
   columns.forEach(function(c,i){
   	focus.select(".line"+i).attr("d", line[i]);	
   });
+  columns2.forEach(function(c,i){
+  	g_single[i].select(".single"+i).attr("d", line_single[i]);	
+  	g_single[i].select(".x.axis").call(xAxis_single[i]);		  	
+  });  
   focus.select(".x.axis").call(xAxis);
 }
 
