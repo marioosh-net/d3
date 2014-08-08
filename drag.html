@@ -81,6 +81,7 @@
          * + data for drag
          */
         var g = svg.append('g')
+        	.attr('class','group')
             .data([{x: 0, y:0}]);
 
         /**
@@ -141,7 +142,8 @@
             .origin(Object)
             .on("drag", dragmove);
 
-        g.call(drag);
+        // g.call(drag);
+        d3.select('.group').call(drag);
 
         function dragmove(d) {          
           if (isXChecked) {
