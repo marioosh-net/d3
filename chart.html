@@ -17,6 +17,10 @@
             stroke: #000;
             shape-rendering: crispEdges;
         }
+        .area {
+            fill: lightsteelblue;
+            stroke-width: 0;
+        }                
         </style>
     </head>
 <body>
@@ -51,6 +55,14 @@
             .y(function(d) { return y(d.y); });
 
         /**
+         * area generator function
+         */
+        var area = d3.svg.area()
+            .x(function(d) { return x(d.x); })
+            .y0(height)
+            .y1(function(d) { return y(d.y); });            
+
+        /**
          * create svg element
          */
         var svg = d3.select("body").append("svg")
@@ -67,6 +79,13 @@
             .attr('stroke', 'black')
             .datum(data)
             .attr("d", line);
+
+        /**
+         * create area
+         */
+        svg.append("path")
+            .attr("class", "area")
+            .attr("d", area(data));            
  
         /**
          * axis generators 
