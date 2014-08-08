@@ -77,9 +77,16 @@
             .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
         /**
+         * group for line and area
+         * + data for drag
+         */
+        var g = svg.append('g')
+            .data([{x: 0, y:0}]);
+
+        /**
          * create path using data and line generator
          */
-        var path = svg.append("path")
+        var path = g.append("path")
             .attr('fill', 'none')
             .attr('stroke', 'black')
             .datum(data)
@@ -88,9 +95,6 @@
         /**
          * create area
          */
-        var g = svg.append('g')
-            .data([{x: 0, y:0}]);
-
         var areapath = g.append("path")
             .attr("class", "area")
             .attr("d", area(data));            
@@ -137,8 +141,7 @@
             .origin(Object)
             .on("drag", dragmove);
 
-        areapath.call(drag);
-        path.call(drag);
+        g.call(drag);
 
         function dragmove(d) {          
           if (isXChecked) {
@@ -147,8 +150,7 @@
           if (isYChecked) {
               d.y = Math.min(d3.event.y);
           }
-          areapath.attr("transform", "translate(" + d.x + "," + d.y + ")");
-          path.attr("transform", "translate(" + d.x + "," + d.y + ")");
+          g.attr("transform", "translate(" + d.x + "," + d.y + ")");
         }
 
         $('#xChecked').click(function() {
