@@ -147,10 +147,10 @@
 
         function dragmove(d) {          
           if (isXChecked) {
-              d.x = Math.min(d3.event.x);
+              d.x = Math.min(0, Math.min(d3.event.x));
           }
           if (isYChecked) {
-              d.y = Math.min(d3.event.y);
+              d.y = Math.min(0, Math.min(d3.event.y));
           }
           g.attr("transform", "translate(" + d.x + "," + d.y + ")");
         }
