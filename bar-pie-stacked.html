@@ -13,8 +13,14 @@
     .arc path {
         stroke: #fff;
     }
+    .arc text {
+      fill: #fff;
+    }
     .bar {
         fill: steelblue;
+    }
+    .bar text {
+        fill: #fff;
     }
     .axis text {
         font: 10px sans-serif;
@@ -217,6 +223,31 @@
         avg_fuel_stop_time: 9.593931366528254
     }];
 
+    /**
+     * mapa kolumn
+     */
+    var map = {
+        train_id: 'train id',
+        dist_overall: 'przejechany dystans w km',
+        time_overall: 'czas przejazdu w sekundach',
+        time_ride: 'czas jazdy w sekundach',
+        time_stop: 'czas postoju w sekundach',
+        time_overall_f: 'czas przejazdu sformatowany',
+        time_ride_f: 'czas jazdy sformatowany',
+        time_stop_f: 'czas postoju sformatowany',
+        perc_ride: 'procent jazdy',
+        perc_stop: 'procent postoju',
+        fuel_overall: 'ilość zużytego paliwa ogółem w litrach',
+        fuel_ride: 'ilość zużytego paliwa podczas jazdy w litrach',
+        fuel_stop: 'ilość zużytego paliwa podczas postoju w litrach',
+        avg_fuel_overall_dist: 'średnie spalanie całkowite [l/km]',
+        avg_fuel_overall_time: 'średnie spalanie całkowite [l/h]',
+        avg_fuel_ride_dist: 'średnie spalanie w czasie jazdy [l/km]',
+        avg_fuel_ride_time: 'średnie spalanie w czasie jazdy [l/h]',
+        avg_fuel_ride_brutto: 'średnie spalanie w czasie jazdy [l/ktkm]',
+        avg_fuel_stop_time: 'średnie spalanie w czasie postoju [l/h]'
+    }
+
     var bigNumberFormat = d3.format(".3s");
 
     /**
@@ -291,27 +322,29 @@
                 return height - y(d[params.col_y]);
             });
 
+        /* bez osi x
         svg.append("g")
             .attr("class", "x axis")
             .attr("transform", "translate(0," + height + ")")
             .call(xAxis);
+        */
 
         svg.append("g")
             .attr("class", "y axis")
-            .call(yAxis)
+            .call(yAxis);/*
             .append("text")
             .attr("transform", "rotate(-90)")
             .attr("y", 6)
             .attr("dy", ".71em")
             .style("text-anchor", "end")
-            .text(params.col_y);
+            .text(params.col_y);*/
 
         /* tytul */
         svg1.append('text')
             .attr('x', '50%')
             .attr('y', '15')
             .attr('style', 'text-anchor: middle;')
-            .text(params.title);
+            .text(/*params.title*/map[params.col_y]);
 
         /**
          * napisy na slupkach poziome
@@ -438,7 +471,7 @@
             .attr("dy", ".35em")
             .style("text-anchor", "middle")
             .text(function(d) {
-                return d.data.key;
+                return d.data.key/*map[d.data.key]*/;
             });
 
         /* tytul */
@@ -464,7 +497,7 @@
         var margin = {
                 top: 20,
                 right: 20,
-                bottom: 30,
+                bottom: 20,
                 left: 40
             },
             width = params.width - margin.left - margin.right,
@@ -522,10 +555,12 @@
             return d.total;
         })]);
 
+        /* bez osi x
         svg.append("g")
             .attr("class", "x axis")
             .attr("transform", "translate(0," + height + ")")
             .call(xAxis);
+        */
 
         svg.append("g")
             .attr("class", "y axis")
@@ -592,6 +627,102 @@
             .text(params.title);
     }
 
+    /**
+     * histogram
+     *
+     * params.col_y - kolumna brane do wykresu
+     *
+     * params.width - szerokosc wykresu
+     * params.height - wysokosc wykresu
+     * params.title - tytul wykresu
+     */
+    var histogram = function(data, params) {
+
+        var values = [];
+        data.forEach(function(el, i) {
+            values.push(+el[params.col_y]);
+        });
+        console.log(values);
+        //var values = d3.range(1000).map(d3.random.bates(10));
+
+        // A formatter for counts.
+        var formatCount = d3.format(",.0f");
+
+        var margin = {
+                top: 20,
+                right: 20,
+                bottom: 20,
+                left: 20
+            },
+            width = params.width - margin.left - margin.right,
+            height = params.height - margin.top - margin.bottom;
+
+        var x = d3.scale.linear()
+            .domain([0, /*1*/ d3.max(values) /*100*/ ])
+            .range([0, width]);
+
+        // Generate a histogram using twenty uniformly-spaced bins.
+        var data = d3.layout.histogram()
+            .bins(x.ticks(10))
+            (values);
+
+        console.log(data);
+
+        var y = d3.scale.linear()
+            .domain([0, d3.max(data, function(d) {
+                return d.y;
+            })])
+            .range([height, 0]);
+
+        var xAxis = d3.svg.axis()
+            .scale(x)
+            .orient("bottom");
+
+        var svg1 = d3.select("body").append("svg");
+        var svg = svg1
+            .attr("width", width + margin.left + margin.right)
+            .attr("height", height + margin.top + margin.bottom)
+            .append("g")
+            .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+        var bar = svg.selectAll(".bar")
+            .data(data)
+            .enter().append("g")
+            .attr("class", "bar")
+            .attr("transform", function(d) {
+                return "translate(" + x(d.x) + "," + y(d.y) + ")";
+            });
+
+        bar.append("rect")
+            .attr("x", 1)
+            .attr("width", x(data[0].dx) - 1)
+            .attr("height", function(d) {
+                return height - y(d.y);
+            });
+
+        bar.append("text")
+            .attr("dy", ".75em")
+            .attr("y", 6)
+            .attr("x", x(data[0].dx) / 2)
+            .attr("text-anchor", "middle")
+            .text(function(d) {
+                return formatCount(d.y);
+            });
+
+        svg.append("g")
+            .attr("class", "x axis")
+            .attr("transform", "translate(0," + height + ")")
+            .call(xAxis);
+
+        /* tytul */
+        svg1.append('text')
+            .attr('x', '50%')
+            .attr('y', '15')
+            .attr('style', 'text-anchor: middle;')
+            .text(/*params.title*/map[params.col_y]);
+
+    }
+
     bar(data, {
         width: 300,
         height: 300,
@@ -608,12 +739,27 @@
     });
 
     stacked(data, {
-        col_x: 'train_id',
         width: 300,
         height: 300,
         col_x: 'train_id',
         col_y: ['perc_ride', 'perc_stop'],
         title: 'średnie spalanie jazda [l/ktkm]'
+    });
+
+    histogram(data, {
+        col_x: 'train_id',
+        col_y: 'perc_ride',
+        width: 300,
+        height: 300,
+        title: 'procent jazdy'
+    });
+
+    histogram(data, {
+        col_x: 'train_id',
+        col_y: 'perc_stop',
+        width: 300,
+        height: 300,
+        title: 'procent postoju'
     });
     </script>
 </body>
